@@ -1,0 +1,6 @@
+{
+  "apitoken": {
+    "description": "csqaq接口Token",
+    "type": "string"
+  }
+}

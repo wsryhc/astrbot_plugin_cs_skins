@@ -1,24 +1,41 @@
 from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
-
-@register("helloworld", "YourName", "一个简单的 Hello World 插件", "1.0.0")
+from astrbot.api import AstrBotConfig
+import requests
+import json
+@register(
+    "astrbot_plugin_cs_skins",
+    "wsryhc", 
+    "cs饰品查询",
+    "0.0.1"
+    )
 class MyPlugin(Star):
-    def __init__(self, context: Context):
+    def __init__(self, context: Context,config: AstrBotConfig):
         super().__init__(context)
-
-    async def initialize(self):
-        """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
-
-    # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
-    @filter.command("helloworld")
-    async def helloworld(self, event: AstrMessageEvent):
-        """这是一个 hello world 指令""" # 这是 handler 的描述，将会被解析方便用户了解插件内容。建议填写。
+        global ApiToken
+        ApiToken = config.get("apitoken","")
+        logger.info(f"Api-Token: {ApiToken}")
+    default_api = "https://api.csqaq.com/api/v1"
+    # 注册指令的装饰器。指令名为 查询饰品。
+    @filter.command("饰品模糊查询")
+    async def find_id(self, event: AstrMessageEvent):
+        """这是一个 饰品模糊查询 指令"""
         user_name = event.get_sender_name()
-        message_str = event.message_str # 用户发的纯文本消息字符串
-        message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
-        logger.info(message_chain)
-        yield event.plain_result(f"Hello, {user_name}, 你发了 {message_str}!") # 发送一条纯文本消息
+        message_str = event.message_str[6:] # 用户发的纯文本消息字符串
+        logger.info(message_str)
+        url = "https://api.csqaq.com/api/v1/search/suggest?text="+message_str
+        payload={}
+        headers = {
+            'ApiToken': ApiToken
+        }
+        response = requests.request("GET", url, headers=headers, data=payload)
 
-    async def terminate(self):
-        """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
+        obj = json.loads(response.text)
+        data_map = {item['id']: item['value'] for item in obj['data']}
+        logger.info(data_map)
+        result_str = "\n".join(f"{key}: {value}" for key, value in data_map.items())
+        if not result_str:
+            yield event.plain_result(f"未找到与 '{message_str}' 相关的饰品")
+        else:
+            yield event.plain_result(result_str) # 发送一条纯文本消息
