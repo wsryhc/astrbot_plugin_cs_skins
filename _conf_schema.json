@@ -1,6 +1,6 @@
 {
   "apitoken": {
-    "description": "csqaq接口Token",
+    "description": "CSQAQ接口Token",
     "type": "string"
   }
 }
