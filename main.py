@@ -242,15 +242,6 @@ class MyPlugin(Star):
             return
         # 构造请求
         url = "https://api.csqaq.com/api/v1/info/exchange_detail"
-        payload = json.dumps({
-            "page_index": 1,
-            "res": option,
-            "platforms": "BUFF-YYYP",
-            "sort_by": 1,
-            "min_price": price_min,
-            "max_price": price_max,
-            "turnover": turnover if turnover>0 else 10
-        })
         headers = {
             'ApiToken': self.api_token,
             'Content-Type': 'application/json'
@@ -349,7 +340,6 @@ yyyp
     @filter.command("指数查询")
     async def find_zhishu(self, event: AstrMessageEvent):
         url = "https://api.csqaq.com/api/v1/current_data?type=init"
-        payload={}
         headers = {
             'ApiToken': self.api_token
         }
